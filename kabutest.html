@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>株式投資 実力診断</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root{--bg:#0a0a0f;--bg2:#12121a;--bg3:#1a1a26;--gold:#c9a84c;--gold2:#e8c96a;--text:#e8e8f0;--text2:#9090a8;--green:#4caf82;--red:#e05555;--border:rgba(201,168,76,0.2);--glow:0 0 30px rgba(201,168,76,0.15);}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'Noto Serif JP',serif;min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(201,168,76,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(201,168,76,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
+.wrap{position:relative;z-index:1;max-width:720px;margin:0 auto;padding:40px 20px;}
+
+/* TOP */
+#page-top{text-align:center;}
+.logo-label{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:4px;color:var(--gold);text-transform:uppercase;margin-bottom:16px;opacity:.8;}
+h1{font-size:clamp(32px,8vw,68px);font-weight:900;line-height:1;background:linear-gradient(135deg,var(--gold2) 0%,var(--gold) 50%,#a07830 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-2px;margin-bottom:8px;}
+.subtitle{font-size:14px;color:var(--text2);letter-spacing:2px;}
+.hero-score{width:160px;height:160px;border-radius:50%;border:2px solid var(--gold);display:flex;flex-direction:column;align-items:center;justify-content:center;margin:40px auto;position:relative;box-shadow:var(--glow),inset 0 0 40px rgba(201,168,76,0.05);animation:pulse 3s ease-in-out infinite;}
+@keyframes pulse{0%,100%{box-shadow:var(--glow),inset 0 0 40px rgba(201,168,76,0.05);}50%{box-shadow:0 0 60px rgba(201,168,76,0.3),inset 0 0 40px rgba(201,168,76,0.1);}}
+.hero-score::before{content:'';position:absolute;inset:-8px;border-radius:50%;border:1px solid rgba(201,168,76,0.15);}
+.hero-num{font-family:'DM Mono',monospace;font-size:48px;font-weight:500;color:var(--gold2);line-height:1;}
+.hero-unit{font-size:11px;color:var(--text2);letter-spacing:2px;margin-top:4px;}
+.desc-block{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:28px;margin:40px 0;text-align:left;}
+.desc-block h3{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:2px;color:var(--gold);margin-bottom:16px;text-transform:uppercase;}
+.section-list{list-style:none;}
+.section-list li{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:14px;line-height:1.6;}
+.section-list li:last-child{border-bottom:none;}
+.sec-num{font-family:'DM Mono',monospace;color:var(--gold);font-size:12px;min-width:24px;margin-top:2px;}
+.btn-start{display:inline-block;background:linear-gradient(135deg,var(--gold) 0%,var(--gold2) 100%);color:#0a0a0f;font-family:'Noto Serif JP',serif;font-weight:700;font-size:16px;padding:18px 60px;border-radius:4px;border:none;cursor:pointer;letter-spacing:2px;margin-top:12px;transition:all .3s;box-shadow:0 4px 24px rgba(201,168,76,0.3);}
+.btn-start:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(201,168,76,0.5);}
+
+/* QUIZ */
+#page-quiz{display:none;}
+.progress-bar-wrap{background:var(--bg3);border-radius:2px;height:3px;margin-bottom:40px;overflow:hidden;}
+.progress-bar-inner{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:2px;transition:width .4s ease;}
+.section-badge{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:8px;}
+.q-counter{font-family:'DM Mono',monospace;font-size:12px;color:var(--text2);margin-bottom:24px;}
+.q-text{font-size:clamp(15px,4vw,20px);font-weight:700;line-height:1.7;margin-bottom:28px;min-height:60px;}
+.chart-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px;}
+.chart-wrap canvas{max-height:180px;}
+.chart-hint{font-size:12px;color:var(--gold);text-align:center;margin-top:10px;padding:8px;background:rgba(201,168,76,0.06);border-radius:6px;}
+.options{display:flex;flex-direction:column;gap:12px;margin-bottom:28px;}
+.opt-btn{background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Noto Serif JP',serif;font-size:14px;padding:16px 20px;text-align:left;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:12px;}
+.opt-btn:hover{border-color:var(--gold);background:rgba(201,168,76,0.08);}
+.opt-btn.correct{border-color:var(--green);background:rgba(76,175,130,0.15);}
+.opt-btn.wrong{border-color:var(--red);background:rgba(224,85,85,0.1);}
+.opt-btn.mental-sel{border-color:var(--gold2);background:rgba(201,168,76,0.15);}
+.opt-letter{font-family:'DM Mono',monospace;font-size:12px;color:var(--gold);min-width:24px;border:1px solid var(--border);border-radius:4px;padding:2px 6px;text-align:center;}
+.dir-btns{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px;}
+.dir-btn{border-radius:8px;border:2px solid var(--border);padding:20px 16px;font-family:'Noto Serif JP',serif;font-size:16px;font-weight:700;cursor:pointer;transition:all .25s;display:flex;flex-direction:column;align-items:center;gap:8px;}
+.dir-btn.up{background:rgba(76,175,130,0.08);color:var(--green);border-color:rgba(76,175,130,0.3);}
+.dir-btn.up:hover,.dir-btn.up.selected{background:rgba(76,175,130,0.2);border-color:var(--green);box-shadow:0 0 20px rgba(76,175,130,0.2);}
+.dir-btn.down{background:rgba(224,85,85,0.08);color:var(--red);border-color:rgba(224,85,85,0.3);}
+.dir-btn.down:hover,.dir-btn.down.selected{background:rgba(224,85,85,0.2);border-color:var(--red);box-shadow:0 0 20px rgba(224,85,85,0.2);}
+.dir-arrow{font-size:28px;line-height:1;}
+.dir-label{font-size:13px;letter-spacing:1px;}
+.feedback{display:none;padding:16px 20px;border-radius:8px;font-size:13px;line-height:1.7;margin-bottom:20px;}
+.feedback.correct-fb{background:rgba(76,175,130,0.1);border:1px solid rgba(76,175,130,0.3);color:var(--green);}
+.feedback.wrong-fb{background:rgba(224,85,85,0.1);border:1px solid rgba(224,85,85,0.3);color:#f08080;}
+.feedback.mental-fb{background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.25);color:var(--gold2);}
+.btn-next{background:transparent;border:1px solid var(--gold);color:var(--gold);font-family:'Noto Serif JP',serif;font-size:14px;padding:14px 40px;border-radius:4px;cursor:pointer;letter-spacing:2px;transition:all .2s;display:none;}
+.btn-next:hover{background:rgba(201,168,76,0.1);}
+
+/* RESULT */
+#page-result{display:none;}
+.confetti-canvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:999;}
+.hero-result{text-align:center;padding:48px 0 40px;position:relative;overflow:hidden;}
+.s-glow-bg{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 20%,rgba(255,215,0,0.18) 0%,transparent 65%);pointer-events:none;display:none;}
+.trophy-anim{font-size:80px;display:block;margin-bottom:16px;opacity:0;animation:trophyIn 0.8s 0.3s ease forwards;}
+@keyframes trophyIn{0%{transform:scale(0) rotate(-15deg);opacity:0;}60%{transform:scale(1.25) rotate(6deg);opacity:1;}100%{transform:scale(1) rotate(0);opacity:1;}}
+.big-score{font-family:'DM Mono',monospace;font-size:clamp(68px,18vw,108px);font-weight:500;line-height:1;display:inline-block;}
+.score-unit{font-family:'DM Mono',monospace;font-size:clamp(18px,4vw,28px);color:var(--text2);}
+.score-max{font-size:13px;color:var(--text2);margin-top:4px;}
+.grade-s .big-score{background:linear-gradient(135deg,#ffe066,#ffd700,#ffb300);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 18px rgba(255,215,0,0.45));}
+.grade-a .big-score{background:linear-gradient(135deg,var(--gold2),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.grade-b .big-score{background:linear-gradient(135deg,#b0c4d8,#7a9ab8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.grade-c .big-score{color:var(--text2);}
+.rank-badge{display:inline-block;padding:8px 28px;border-radius:4px;font-size:14px;letter-spacing:2px;font-weight:700;margin-top:14px;}
+.grade-s .rank-badge{background:linear-gradient(135deg,#ffd700,#ffe066);color:#2a1800;}
+.grade-a .rank-badge{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#2a1800;}
+.grade-b .rank-badge{background:rgba(176,196,216,0.15);border:1px solid #7a9ab8;color:#b0c4d8;}
+.grade-c .rank-badge{background:rgba(144,144,168,0.12);border:1px solid rgba(144,144,168,0.3);color:var(--text2);}
+.stars-wrap{position:absolute;inset:0;pointer-events:none;overflow:hidden;display:none;}
+.star{position:absolute;width:6px;height:6px;background:#ffd700;border-radius:50%;animation:starFloat linear infinite;}
+@keyframes starFloat{0%{transform:translateY(0) scale(1);opacity:1;}100%{transform:translateY(-120px) scale(0);opacity:0;}}
+.scores-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:24px;}
+.score-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:16px;text-align:center;}
+.score-card-label{font-size:10px;letter-spacing:1px;color:var(--text2);margin-bottom:8px;}
+.score-card-val{font-family:'DM Mono',monospace;font-size:26px;color:var(--gold2);}
+.score-card-max{font-size:11px;color:var(--text2);}
+.score-card-bar{height:3px;background:var(--bg3);border-radius:2px;margin-top:8px;overflow:hidden;}
+.score-card-bar-inner{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:2px;transition:width .8s ease;}
+.chart-section{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:28px;margin-bottom:24px;}
+.chart-section h3{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:20px;}
+.radar-wrap{max-width:300px;margin:0 auto;}
+.comment-box{background:var(--bg2);border-left:3px solid var(--gold);padding:20px 24px;margin-bottom:24px;border-radius:0 8px 8px 0;font-size:14px;line-height:1.8;color:var(--text2);}
+.aff-section{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:28px;margin-bottom:24px;}
+.aff-section h3{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:4px;}
+.aff-subtitle{font-size:12px;color:var(--text2);margin-bottom:20px;}
+.aff-cards{display:flex;flex-direction:column;gap:12px;}
+.aff-card{display:flex;align-items:center;gap:16px;padding:16px;background:var(--bg3);border-radius:8px;border:1px solid rgba(255,255,255,0.06);text-decoration:none;transition:all .2s;cursor:pointer;}
+.aff-card:hover{border-color:var(--gold);background:rgba(201,168,76,0.05);}
+.aff-icon{width:44px;height:44px;border-radius:8px;background:linear-gradient(135deg,var(--gold),var(--gold2));display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.aff-info{flex:1;}
+.aff-name{font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.aff-desc{font-size:12px;color:var(--text2);line-height:1.5;}
+.aff-arrow{color:var(--gold);font-size:18px;}
+.share-section{text-align:center;margin-bottom:40px;}
+.share-section h3{font-size:13px;letter-spacing:2px;color:var(--text2);margin-bottom:16px;}
+.share-btn{display:inline-flex;align-items:center;gap:8px;background:#1d9bf0;color:#fff;border:none;border-radius:24px;padding:12px 28px;font-family:'Noto Serif JP',serif;font-size:14px;cursor:pointer;transition:all .2s;}
+.share-btn:hover{background:#1a8cd8;transform:translateY(-1px);}
+.retry-btn{display:block;width:100%;background:transparent;border:1px solid rgba(255,255,255,0.1);color:var(--text2);font-family:'Noto Serif JP',serif;font-size:13px;padding:14px;border-radius:4px;cursor:pointer;letter-spacing:2px;transition:all .2s;margin-top:12px;}
+.retry-btn:hover{border-color:var(--text2);color:var(--text);}
+.fade-in{animation:fadeIn .5s ease forwards;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.slide-in{animation:slideIn .4s ease forwards;}
+@keyframes slideIn{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:translateX(0)}}
+</style>
+</head>
+<body>
+<canvas id="confetti-canvas" class="confetti-canvas"></canvas>
+<div class="wrap">
+
+<!-- TOP -->
+<div id="page-top">
+  <div style="margin-bottom:56px;">
+    <div class="logo-label">Investment Assessment</div>
+    <h1>株式投資<br>実力診断</h1>
+    <div class="subtitle">あなたの投資スコアを測定する</div>
+  </div>
+  <div class="hero-score">
+    <div class="hero-num">?</div>
+    <div class="hero-unit">SCORE</div>
+  </div>
+  <div class="desc-block">
+    <h3>診断内容 — 全12問・100点満点</h3>
+    <ul class="section-list">
+      <li><span class="sec-num">01</span><span>📚 知識問題（4問・各10点）― 投資の基礎・重要指標を問う</span></li>
+      <li><span class="sec-num">02</span><span>📊 チャート問題（4問・各10点）― 値動きのパターンを直感で読む</span></li>
+      <li><span class="sec-num">03</span><span>🧘 メンタル診断（4問・各15点）― あなたの投資判断力を測定</span></li>
+    </ul>
+  </div>
+  <button class="btn-start" onclick="startQuiz()">診断スタート →</button>
+</div>
+
+<!-- QUIZ -->
+<div id="page-quiz">
+  <div class="progress-bar-wrap"><div class="progress-bar-inner" id="progress-bar" style="width:0%"></div></div>
+  <div class="section-badge" id="section-badge"></div>
+  <div class="q-counter" id="q-counter"></div>
+  <div class="q-text" id="q-text"></div>
+  <div id="chart-area"></div>
+  <div class="options" id="options-area"></div>
+  <div class="feedback" id="feedback"></div>
+  <button class="btn-next" id="btn-next" onclick="nextQ()">次の問題へ →</button>
+</div>
+
+<!-- RESULT -->
+<div id="page-result">
+  <div class="hero-result" id="hero-result">
+    <div class="s-glow-bg" id="s-glow-bg"></div>
+    <div class="stars-wrap" id="stars-wrap"></div>
+    <span class="trophy-anim" id="trophy-anim">🏆</span>
+    <div class="logo-label">Your Score</div>
+    <div>
+      <span class="big-score" id="result-score">0</span><span class="score-unit">点</span>
+    </div>
+    <div class="score-max">/ 100点満点</div>
+    <div class="rank-badge" id="rank-badge">-</div>
+  </div>
+
+  <div class="scores-grid">
+    <div class="score-card">
+      <div class="score-card-label">📚 知識力</div>
+      <div class="score-card-val" id="sc-k">0</div>
+      <div class="score-card-max">/ 40点</div>
+      <div class="score-card-bar"><div class="score-card-bar-inner" id="bar-k" style="width:0%"></div></div>
+    </div>
+    <div class="score-card">
+      <div class="score-card-label">📊 チャート力</div>
+      <div class="score-card-val" id="sc-c">0</div>
+      <div class="score-card-max">/ 40点</div>
+      <div class="score-card-bar"><div class="score-card-bar-inner" id="bar-c" style="width:0%"></div></div>
+    </div>
+    <div class="score-card">
+      <div class="score-card-label">🧘 メンタル力</div>
+      <div class="score-card-val" id="sc-m">0</div>
+      <div class="score-card-max">/ 20点</div>
+      <div class="score-card-bar"><div class="score-card-bar-inner" id="bar-m" style="width:0%"></div></div>
+    </div>
+  </div>
+
+  <div class="chart-section">
+    <h3>Radar Analysis</h3>
+    <div class="radar-wrap"><canvas id="radar-chart"></canvas></div>
+  </div>
+  <div class="comment-box" id="comment-box"></div>
+  <div class="aff-section">
+    <h3>Next Step</h3>
+    <div class="aff-subtitle" id="aff-subtitle"></div>
+    <div class="aff-cards" id="aff-cards"></div>
+  </div>
+  <div class="share-section">
+    <h3>診断結果をシェアする</h3>
+    <button class="share-btn" onclick="shareX()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+      Xでシェアする
+    </button>
+    <button class="retry-btn" onclick="retryQuiz()">もう一度診断する</button>
+  </div>
+</div>
+</div>
+
+<script>
+// ============================================================
+// QUESTIONS
+// 知識 4問×10pt = 40pt
+// チャート 4問×10pt = 40pt
+// メンタル 4問 最大5pt = 20pt
+// 合計 MAX 100点
+// ============================================================
+const Q = [
+  // ─── 知識 4問 ───
+  {sec:'知識問題',type:'choice',
+   text:'株の「配当利回り」とは何ですか？',
+   opts:['1株あたりの年間配当金 ÷ 株価 × 100','株価 ÷ 1株あたり純利益','配当金の総額 ÷ 時価総額','純利益 ÷ 自己資本'],
+   ans:0,pt:10,exp:'正解！配当利回り＝年間配当金÷株価×100。保有するだけでもらえるリターンを示す基本指標です。'},
+  {sec:'知識問題',type:'choice',
+   text:'「損切り」とは何ですか？',
+   opts:['含み損の状態でもあえて売り、それ以上の損失を防ぐこと','株価が下がったときに買い増してコストを下げること','配当金を受け取らずに再投資すること','信用取引で空売りポジションを持つこと'],
+   ans:0,pt:10,exp:'正解！損切りは投資で最も重要なリスク管理。ルールを決めて機械的に実行できるかが上達の分かれ目です。'},
+  {sec:'知識問題',type:'choice',
+   text:'「分散投資」の主な目的は何ですか？',
+   opts:['一銘柄に集中してリターンを最大化する','複数の資産に投資してリスクを分散する','短期売買を繰り返して利益を積み上げる','信用取引でレバレッジをかける'],
+   ans:1,pt:10,exp:'正解！「卵を一つのかごに盛るな」。銘柄・業種・地域を分散することで一つの下落が全体に影響しにくくなります。'},
+  {sec:'知識問題',type:'choice',
+   text:'「ドルコスト平均法」の特徴として正しいものはどれですか？',
+   opts:['株価が高い時に多く買い、安い時に少し買う','毎回同じ金額を定期的に投資し続ける','値下がりしたときだけスポットで買う','利益が出たら自動的に再投資する'],
+   ans:1,pt:10,exp:'正解！毎月一定額を積み立てる方法。株価が安いときは多く、高いときは少なく買えるため、平均取得単価を自然に抑えられます。'},
+
+  // ─── チャート 4問（中級・やや難しめ） ───
+  {sec:'チャート問題',type:'chart',
+   text:'このチャートを見てください。一時的に大きく下げる場面がありましたが、その後の株価はどちらに向かいましたか？',
+   hint:'💡 途中の急落に惑わされないように。全体の流れ（トレンド）がどちら向きかを見極めましょう。',
+   data:[100,103,106,104,108,105,100,97,102,106,110,108,113,117],
+   ans:'up',pt:10,exp:'正解！途中で急落する場面がありましたが、その後は切り返して上昇を継続。下落は一時的な「押し目」で、全体は上昇トレンドです。'},
+  {sec:'チャート問題',type:'chart',
+   text:'このチャートを見てください。高値圏でいったん上に跳ねた後、株価はどちらに向かいましたか？',
+   hint:'💡 最後に一度上に跳ねています。その後どうなったかを注目してください。',
+   data:[100,104,108,112,115,118,120,123,121,125,122,127,124,120],
+   ans:'down',pt:10,exp:'正解！高値圏で一度上昇した後、反落しています。天井付近での「だまし上げ」に近い動き。上ヒゲが長い場合は要注意です。'},
+  {sec:'チャート問題',type:'chart',
+   text:'このチャートを見てください。下落した後に一度反発しましたが、その後はどちらに向かいましたか？',
+   hint:'💡 下落→反発という動きが見えます。反発後の動きが続いているのか、再び崩れたのかを見てください。',
+   data:[120,116,112,108,105,102,106,109,107,104,101,98,96,93],
+   ans:'down',pt:10,exp:'正解！下落後に一時反発しましたが、その後は再び下落しています。この「戻り売り」の形は、下降トレンド中によく見られるパターンです。'},
+  {sec:'チャート問題',type:'chart',
+   text:'このチャートを見てください。長い横ばいの後に一度下落しましたが、最終的に株価はどちらに向かいましたか？',
+   hint:'💡 一度下に動いた後の動きが大切です。そのまま下落が続いたのか、切り返したのかを見てください。',
+   data:[100,101,99,102,100,98,101,99,96,93,97,102,107,113],
+   ans:'up',pt:10,exp:'正解！横ばいから一度下に抜けましたが、その後強く切り返して上昇しています。「だまし下げ」と呼ばれる、初心者が騙されやすい典型的なパターンです。'},
+
+  // ─── メンタル 4問（各最大5pt → 合計最大20pt） ───
+  {sec:'メンタル診断',type:'mental',
+   text:'買った株が-15%になりました。あなたならどうしますか？',
+   opts:['損切りラインを決めていたので、ルール通りすぐ売る','少し様子を見てから判断する','損を取り返すために買い増す','回復を信じてずっと持ち続ける'],
+   scores:[5,3,1,0]},
+  {sec:'メンタル診断',type:'mental',
+   text:'SNSで「この株が近いうちに2倍になる！」という投稿を見ました。どうしますか？',
+   opts:['完全に無視して自分の投資方針を続ける','自分でチャートや業績を調べてから判断する','信頼できそうなら少額だけ試す','みんなが注目しているなら大きく買う'],
+   scores:[5,4,2,0]},
+  {sec:'メンタル診断',type:'mental',
+   text:'投資で大きな利益が出たとき、次のトレードにどう臨みますか？',
+   opts:['浮かれず、いつも通りのルールで冷静に臨む','自信がついて、もう少しリスクを増やしてみる','さらに大きく勝とうと興奮してポジションを増やす','利益を全部出金して投資を一時停止する'],
+   scores:[5,3,0,2]},
+  {sec:'メンタル診断',type:'mental',
+   text:'連続で損失が続き、気持ちが落ち込んでいます。どうしますか？',
+   opts:['いったん取引を止めて、日誌を見返し原因を分析する','損失を取り返すために取引量を増やす','少額に戻してゆっくり立て直す','気晴らしに全く別の銘柄を試してみる'],
+   scores:[5,0,4,1]}
+];
+
+// ============================================================
+let cur=0,answered=false,kS=0,cS=0,mS=0;
+let cInst=[];
+
+function show(id){
+  ['page-top','page-quiz','page-result'].forEach(p=>document.getElementById(p).style.display='none');
+  const el=document.getElementById(id);
+  el.style.display='block';
+  el.classList.add('fade-in');
+}
+function startQuiz(){cur=0;kS=cS=mS=0;answered=false;show('page-quiz');renderQ();}
+function retryQuiz(){startQuiz();}
+
+function renderQ(){
+  answered=false;
+  const q=Q[cur];
+  document.getElementById('progress-bar').style.width=(cur/Q.length*100)+'%';
+  const sm={'知識問題':'Section 01 / 知識問題','チャート問題':'Section 02 / チャート問題','メンタル診断':'Section 03 / メンタル診断'};
+  document.getElementById('section-badge').textContent=sm[q.sec];
+  document.getElementById('q-counter').textContent=`Question ${cur+1} / ${Q.length}`;
+  document.getElementById('q-text').textContent=q.text;
+  document.getElementById('feedback').style.display='none';
+  document.getElementById('btn-next').style.display='none';
+  document.getElementById('chart-area').innerHTML='';
+  document.getElementById('options-area').innerHTML='';
+  cInst.forEach(c=>c.destroy()); cInst=[];
+  if(q.type==='chart') renderChart(q);
+  else renderChoice(q);
+}
+
+function renderChart(q){
+  const ca=document.getElementById('chart-area');
+  const wrap=document.createElement('div'); wrap.className='chart-wrap';
+  const cv=document.createElement('canvas'); wrap.appendChild(cv);
+  if(q.hint){const h=document.createElement('div');h.className='chart-hint';h.textContent=q.hint;wrap.appendChild(h);}
+  ca.appendChild(wrap);
+  const inst=new Chart(cv,{
+    type:'line',
+    data:{
+      labels:q.data.map((_,i)=>i===0?'開始':i===q.data.length-1?'現在':''),
+      datasets:[{data:q.data,borderColor:'#c9a84c',backgroundColor:'rgba(201,168,76,0.08)',borderWidth:2.5,
+        pointRadius:(ctx)=>(ctx.dataIndex===0||ctx.dataIndex===q.data.length-1)?5:2,
+        pointBackgroundColor:(ctx)=>ctx.dataIndex===q.data.length-1?'#e8c96a':'#c9a84c',
+        fill:true,tension:0.3}]
+    },
+    options:{responsive:true,plugins:{legend:{display:false}},
+      scales:{
+        x:{ticks:{color:'#9090a8',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}},
+        y:{ticks:{color:'#9090a8',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}}
+      }}
+  });
+  cInst.push(inst);
+  const oa=document.getElementById('options-area');
+  const db=document.createElement('div'); db.className='dir-btns';
+  db.innerHTML=`
+    <button class="dir-btn up" onclick="ansChart('up',this)"><span class="dir-arrow">↑</span><span class="dir-label">上昇している</span></button>
+    <button class="dir-btn down" onclick="ansChart('down',this)"><span class="dir-arrow">↓</span><span class="dir-label">下落している</span></button>`;
+  oa.appendChild(db);
+}
+
+function renderChoice(q){
+  const oa=document.getElementById('options-area');
+  ['A','B','C','D'].forEach((L,i)=>{
+    const b=document.createElement('button');
+    b.className='opt-btn slide-in';
+    b.style.animationDelay=(i*.08)+'s';
+    b.innerHTML=`<span class="opt-letter">${L}</span>${q.opts[i]}`;
+    b.onclick=()=>q.type==='mental'?ansMental(i,b,q):ansKnow(i,b,q);
+    oa.appendChild(b);
+  });
+}
+
+function ansKnow(idx,btn,q){
+  if(answered)return; answered=true;
+  const all=document.querySelectorAll('.opt-btn');
+  all.forEach(b=>b.style.pointerEvents='none');
+  const fb=document.getElementById('feedback');
+  if(idx===q.ans){
+    kS+=q.pt; btn.classList.add('correct');
+    fb.className='feedback correct-fb'; fb.textContent='✓ '+q.exp;
+  } else {
+    btn.classList.add('wrong'); all[q.ans].classList.add('correct');
+    fb.className='feedback wrong-fb'; fb.textContent='✗ 不正解。正解：'+q.opts[q.ans]+'｜'+q.exp;
+  }
+  fb.style.display='block'; document.getElementById('btn-next').style.display='inline-block';
+}
+
+function ansChart(dir,btn){
+  if(answered)return; answered=true;
+  const q=Q[cur];
+  document.querySelectorAll('.dir-btn').forEach(b=>{b.style.pointerEvents='none';b.style.opacity='.45';});
+  btn.style.opacity='1'; btn.classList.add('selected');
+  const fb=document.getElementById('feedback');
+  if(dir===q.ans){cS+=q.pt;fb.className='feedback correct-fb';fb.textContent='✓ '+q.exp;}
+  else{fb.className='feedback wrong-fb';fb.textContent='✗ 不正解。'+q.exp;}
+  fb.style.display='block'; document.getElementById('btn-next').style.display='inline-block';
+}
+
+function ansMental(idx,btn,q){
+  if(answered)return; answered=true;
+  document.querySelectorAll('.opt-btn').forEach(b=>b.style.pointerEvents='none');
+  btn.classList.add('mental-sel');
+  mS+=q.scores[idx];
+  const bi=q.scores.indexOf(Math.max(...q.scores));
+  const fb=document.getElementById('feedback');
+  fb.className='feedback mental-fb';
+  fb.textContent=`💡 最も安定した投資判断は「${q.opts[bi]}」です。感情ではなくルールで動けるかが上達のカギ。`;
+  fb.style.display='block'; document.getElementById('btn-next').style.display='inline-block';
+}
+
+function nextQ(){
+  cur++;
+  if(cur>=Q.length) showResult();
+  else{renderQ();window.scrollTo({top:0,behavior:'smooth'});}
+}
+
+// ============================================================
+// RESULT
+// ============================================================
+function showResult(){
+  show('page-result');
+  window.scrollTo({top:0,behavior:'smooth'});
+
+  // メンタルを20点満点にスケール
+  const mScaled = Math.round(mS / 20 * 20); // max 20 already
+  const total = kS + cS + mScaled;
+
+  let grade,rankTxt,trophy,comment;
+  if(total>=85){
+    grade='S'; rankTxt='🏆 投資マスター'; trophy='🏆';
+    comment=`驚異の${total}点！上位数%のトップ投資家レベルです。知識・チャート読み・メンタル管理のすべてが高水準。次のステップはシステムトレードや自動化。仕組みで資産を増やす段階に来ています。`;
+  } else if(total>=70){
+    grade='A'; rankTxt='📈 上級トレーダー'; trophy='🥇';
+    comment=`${total}点。投資の核心をしっかり理解している上級者です。あと少しでマスター級。弱い分野を集中補強することで大きくスコアアップできます。`;
+  } else if(total>=50){
+    grade='B'; rankTxt='📊 中級者'; trophy='🥈';
+    comment=`${total}点。基礎は身についています。実践経験を積みながら、チャートの読み方とメンタル管理（感情で動かない力）を鍛えましょう。`;
+  } else {
+    grade='C'; rankTxt='🌱 成長中の投資家'; trophy='🌱';
+    comment=`${total}点。まだまだ伸びしろ大！基礎知識を一通り学んで少額から実践を始めましょう。最初の一歩が将来の大きな差になります。`;
+  }
+
+  const heroEl=document.getElementById('hero-result');
+  heroEl.className='hero-result grade-'+grade.toLowerCase();
+  document.getElementById('trophy-anim').textContent=trophy;
+
+  if(grade==='S'){
+    document.getElementById('s-glow-bg').style.display='block';
+    spawnStars(); launchConfetti(300);
+  } else if(grade==='A'){
+    launchConfetti(150);
+  }
+
+  animNum('result-score',total,1400);
+  document.getElementById('rank-badge').textContent=rankTxt;
+  document.getElementById('comment-box').textContent=comment;
+
+  setTimeout(()=>{
+    document.getElementById('sc-k').textContent=kS;
+    document.getElementById('sc-c').textContent=cS;
+    document.getElementById('sc-m').textContent=mScaled;
+    document.getElementById('bar-k').style.width=(kS/40*100)+'%';
+    document.getElementById('bar-c').style.width=(cS/40*100)+'%';
+    document.getElementById('bar-m').style.width=(mScaled/20*100)+'%';
+  },600);
+
+  setTimeout(()=>{
+    new Chart(document.getElementById('radar-chart'),{
+      type:'radar',
+      data:{
+        labels:['知識力','チャート力','メンタル力'],
+        datasets:[{
+          data:[Math.round(kS/40*100),Math.round(cS/40*100),Math.round(mScaled/20*100)],
+          backgroundColor:'rgba(201,168,76,0.15)',borderColor:'#c9a84c',borderWidth:2,
+          pointBackgroundColor:'#e8c96a',pointRadius:5
+        }]
+      },
+      options:{scales:{r:{min:0,max:100,ticks:{stepSize:25,color:'#9090a8',font:{size:10},backdropColor:'transparent'},
+        grid:{color:'rgba(201,168,76,0.15)'},angleLines:{color:'rgba(201,168,76,0.15)'},
+        pointLabels:{color:'#e8e8f0',font:{size:13}}}},plugins:{legend:{display:false}}}
+    });
+  },400);
+
+  renderAffs(grade);
+}
+
+function animNum(id,target,dur){
+  const el=document.getElementById(id);
+  const t0=performance.now();
+  (function s(now){
+    const p=Math.min((now-t0)/dur,1),e=1-Math.pow(1-p,3);
+    el.textContent=Math.round(target*e);
+    if(p<1)requestAnimationFrame(s);
+  })(performance.now());
+}
+
+function spawnStars(){
+  const wrap=document.getElementById('stars-wrap');
+  wrap.style.display='block';
+  for(let i=0;i<32;i++){
+    const s=document.createElement('div'); s.className='star';
+    s.style.cssText=`left:${Math.random()*100}%;top:${55+Math.random()*45}%;width:${4+Math.random()*7}px;height:${4+Math.random()*7}px;animation-duration:${1.4+Math.random()*2}s;animation-delay:${Math.random()*2.5}s;`;
+    wrap.appendChild(s);
+  }
+}
+
+function launchConfetti(count){
+  const cv=document.getElementById('confetti-canvas');
+  const ctx=cv.getContext('2d');
+  cv.width=window.innerWidth; cv.height=window.innerHeight;
+  const colors=['#ffd700','#e8c96a','#c9a84c','#ffffff','#4caf82','#f08080','#a0cfff'];
+  const pieces=Array.from({length:count},()=>({
+    x:Math.random()*cv.width,y:-20-Math.random()*200,
+    w:5+Math.random()*9,h:3+Math.random()*6,
+    color:colors[Math.floor(Math.random()*colors.length)],
+    rot:Math.random()*360,drot:(Math.random()-.5)*7,
+    speed:1.8+Math.random()*3.5,
+    sx:Math.random()*3,so:Math.random()*Math.PI*2,ss:0.02+Math.random()*0.04
+  }));
+  let frame=0;
+  (function draw(){
+    ctx.clearRect(0,0,cv.width,cv.height);
+    let alive=false;
+    pieces.forEach(p=>{
+      p.y+=p.speed;p.x+=Math.sin(p.so+frame*p.ss)*p.sx;p.rot+=p.drot;
+      if(p.y<cv.height+20)alive=true;
+      ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);
+      ctx.fillStyle=p.color;ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);ctx.restore();
+    });
+    frame++;
+    if(alive)requestAnimationFrame(draw);
+    else ctx.clearRect(0,0,cv.width,cv.height);
+  })();
+}
+
+function renderAffs(grade){
+  const data={
+    S:{sub:'エキスパート向け：自動化・上位ツール',cards:[
+      {icon:'⚙️',name:'自動売買構築ガイド（note）',desc:'Pine Script×PythonでFX自動化を実現する全工程。上級者向け実践解説。',url:'#'},
+      {icon:'💹',name:'OANDA Japan',desc:'APIが充実しシステムトレードにも対応。スプレッドの狭さも魅力。',url:'#'}]},
+    A:{sub:'上級者向け：本格ツール・FXへ',cards:[
+      {icon:'📊',name:'楽天証券 マーケットスピード',desc:'高機能チャートと豊富なスクリーニング機能。無料で使えるプロ仕様。',url:'#'},
+      {icon:'📝',name:'投資戦略note',desc:'上位層が実践している思考法・手法をまとめた有料マガジン。',url:'#'}]},
+    B:{sub:'中級者向け：スキルアップに',cards:[
+      {icon:'🏦',name:'SBI証券',desc:'手数料無料・銘柄数豊富。中級者にも使いやすい高機能ツール完備。',url:'#'},
+      {icon:'📗',name:'投資中級者向けnote',desc:'チャート分析とメンタル管理を強化するための実践ガイド。',url:'#'}]},
+    C:{sub:'初心者向け：まずはここから',cards:[
+      {icon:'🏦',name:'SBI証券（口座開設）',desc:'口座数No.1。手数料無料・少額から始められて初心者に最適。',url:'#'},
+      {icon:'📘',name:'投資入門note',desc:'ゼロから学べる株・FXの基礎解説。完全無料で公開中。',url:'#'}]}
+  };
+  const d=data[grade];
+  document.getElementById('aff-subtitle').textContent=d.sub;
+  const con=document.getElementById('aff-cards'); con.innerHTML='';
+  d.cards.forEach(c=>{
+    const el=document.createElement('a');
+    el.className='aff-card';el.href=c.url;
+    el.innerHTML=`<div class="aff-icon">${c.icon}</div><div class="aff-info"><div class="aff-name">${c.name}</div><div class="aff-desc">${c.desc}</div></div><div class="aff-arrow">→</div>`;
+    con.appendChild(el);
+  });
+}
+
+function shareX(){
+  const score=document.getElementById('result-score').textContent;
+  const rank=document.getElementById('rank-badge').textContent;
+  const t=`株式投資の実力診断をしたら【${score}点 / 100点満点】でした！\n評価：${rank}\n\nあなたは何点？👇\n#投資診断 #株式投資 #FX`;
+  window.open('https://twitter.com/intent/tweet?text='+encodeURIComponent(t),'_blank');
+}
+</script>
+</body>
+</html>
